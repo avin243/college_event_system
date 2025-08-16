@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>College Event Registration</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>College Event Registration System</h1>
+
+    <section>
+        <h2>Add Event</h2>
+        <input id="eventName" placeholder="Event Name">
+        <input id="eventDesc" placeholder="Description">
+        <input id="eventDate" type="date">
+        <input id="eventCapacity" type="number" placeholder="Capacity">
+        <button onclick="addEvent()">Add</button>
+    </section>
+
+    <section>
+        <h2>Register Participant</h2>
+        <input id="pName" placeholder="Name">
+        <input id="pRoll" placeholder="Roll Number">
+        <input id="pDept" placeholder="Department">
+        <input id="pEvent" placeholder="Event Name">
+        <button onclick="registerParticipant()">Register</button>
+    </section>
+
+    <section>
+        <h2>Search Participants</h2>
+        <input id="searchEvent" placeholder="Event Name">
+        <button onclick="searchParticipants()">Search</button>
+        <ul id="participantList"></ul>
+    </section>
+
+    <section>
+        <h2>Delete Event</h2>
+        <input id="deleteEventName" placeholder="Event Name">
+        <button onclick="deleteEvent()">Delete</button>
+    </section>
+
+    <section>
+        <h2>Update Event</h2>
+        <input id="updateName" placeholder="Event Name">
+        <input id="updateDesc" placeholder="New Description">
+        <input id="updateDate" type="date">
+        <input id="updateCapacity" type="number" placeholder="New Capacity">
+        <button onclick="updateEvent()">Update</button>
+    </section>
+
+    <section>
+        <h2>Events</h2>
+        <button onclick="loadEvents()">Refresh</button>
+        <ul id="eventList"></ul>
+    </section>
+
+    <script>
+        function addEvent() {
+            fetch("/add_event", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    name: document.getElementById("eventName").value,
+                    desc: document.getElementById("eventDesc").value,
+                    date: document.getElementById("eventDate").value,
+                    capacity: document.getElementById("eventCapacity").value
+                })
+            }).then(r => r.json())
+            .then(d => {alert(d.status)}); 
+        }
+
+        function loadEvents() {
+            fetch("/events", {
+                method: "GET"
+            })
+            .then(r => r.json())
+            .then(data => {
+                let list = document.getElementById("eventList");
+                list.innerHTML = "";
+                data.events.forEach(ev => {
+                    let li = document.createElement("li");
+                    li.textContent = `${ev.name} | Desc: ${ev.desc} | Date: ${ev.date} | Capacity: ${ev.capacity} | Registered: ${ev.count}`;
+                    list.appendChild(li);
+                });
+            });
+        }
+
+        function registerParticipant() {
+            fetch("/register", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    name: document.getElementById("pName").value,
+                    roll: document.getElementById("pRoll").value,
+                    dept: document.getElementById("pDept").value,
+                    event: document.getElementById("pEvent").value
+                })
+            }).then(r => r.json()).then(d => alert(d.status));
+        }
+
+        function searchParticipants() {
+            fetch("/search", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    event: document.getElementById("searchEvent").value
+                })
+            }).then(r => r.json()).then(d => {
+                let list = document.getElementById("participantList");
+                list.innerHTML = "";
+                if (d.status === "found") {
+                    d.participants.forEach(p => {
+                        let li = document.createElement("li");
+                        li.textContent = `${p.name} (${p.roll}) - ${p.dept}`;
+                        list.appendChild(li);
+                    });
+                } else {
+                    alert("Event not found");
+                }
+            });
+        }
+
+        function deleteEvent() {
+            fetch("/delete_event", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    name: document.getElementById("deleteEventName").value
+                })
+            }).then(r => r.json()).then(d => alert(d.status));
+        }
+
+        function updateEvent() {
+            fetch("/update_event", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    name: document.getElementById("updateName").value,
+                    desc: document.getElementById("updateDesc").value,
+                    date: document.getElementById("updateDate").value,
+                    capacity: document.getElementById("updateCapacity").value
+                })
+            }).then(r => r.json()).then(d => alert(d.status));
+        }
+
+    </script>
+</body>
+</html>
