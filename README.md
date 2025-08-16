@@ -1,6 +1,6 @@
 # college_event_system
 
-To run:
+# To run:
   python event_system.py
-and then:
+# and then:
   Open: http://localhost:8000/
